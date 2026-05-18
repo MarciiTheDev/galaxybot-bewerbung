@@ -10,7 +10,7 @@ bun install
 
 ### Set variables
 
-In order for the code to work we need some env variables so go to the root of the project and create a `.env` file with the following varaibles:
+In order for the code to work we need some env variables so go to the root of the project and create a `.env` file with the following variables:
 - `DATABASE_USER` - The database user to authenticate with
 - `DATABASE_PASSWORD` - The password for the database user
 - `DATABASE_NAME` - The name of the database to use
