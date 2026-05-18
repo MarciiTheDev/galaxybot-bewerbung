@@ -21,10 +21,16 @@ export default <Button> {
         await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 
         const panelId = args[0];
-        if(!panelId) return;
+        if(!panelId) {
+            console.log("NO PID")
+            return
+        };
 
         const panel = await DatabasePanel.findOne({ where: { id: panelId } });
-        if(!panel) return;
+        if(!panel) {
+            console.log("NO PENTRY");
+            return
+        };
 
         const guildId = panel.get("guild") as string;
         if(interaction.guildId !== guildId) return;
@@ -47,16 +53,14 @@ export default <Button> {
             await openTicket.update("closed", true); // there can be a race-condition here in which there are multiple open tickets if the user clicks the button fast enough cba to fix it in the scope of this project tho
         }
 
-        console.log("HI")
-
-        // IDK ERROR
-        let categoryId = await findAsync(JSON.parse(panel.get("categories") as string) as string[], async (id) => {
+        let categoryId;
+        for(const id of JSON.parse(panel.get("categories") as string) as string[]) {
             const category = await interaction.guild!.channels.fetch(id) as CategoryChannel;
-            if(!category) return false;
-
-            return Object.keys(category.children).length < 50;
-        });
-        // TILL HERE
+            if(!category) continue;
+            if(Object.keys(category.children).length >= 50) continue;
+            categoryId = id;
+            break;
+        }
 
         const supportRoles = JSON.parse(panel.get("supportRoles") as string) as string[];
 
@@ -105,11 +109,13 @@ export default <Button> {
                     ]
                 });
 
-                await panel.update("nextNumber", ticketNumber+1, { transaction: t });
+                panel.set("nextNumber", ticketNumber+1);
+                await panel.save({ transaction: t });
 
                 return ticketNumber;
             });
-        } catch {
+        } catch(err) {
+            console.log(err)
             await interaction.followUp({ embeds: [Embeds.FailedToCreateChannel] });
             return;
         }
@@ -128,9 +134,9 @@ export default <Button> {
 
         try {
             await ticketChannel!.send({
-                content: supportRoles.map(role => {
-                    return `<&@${role}>`
-                }).join() + `<@${interaction.user.id}>`,
+                content: (supportRoles.map(role => {
+                    return `<@&${role}>`
+                }).join() + `<@${interaction.user.id}>`),
                 allowedMentions: {
                     roles: supportRoles,
                     users: [interaction.user.id]

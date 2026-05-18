@@ -43,7 +43,7 @@ export const DatabaseTicket = database.define("ticket", {
 try {
     await database.authenticate();
     console.log('Connection to Database has been established successfully.');
-    await database.sync({ force: true });
+    //await database.sync({ force: true });
     console.log('Database synced successfully.');
 } catch (error) {
     console.error('Unable to connect to the database:', error);

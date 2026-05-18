@@ -33,7 +33,8 @@ export default async function(client: ExtendedClient, interaction: Interaction) 
         try {
             if(!button) throw "Command not found";
             await button.run(client, interaction, interaction.customId.split("#").slice(1));
-        } catch {
+        } catch(err) {
+            console.log(err)
             await interaction.followUp({ embeds: [Embeds.FailedToExecuteCommand] }).catch(() => {
                 interaction.reply({ embeds: [Embeds.FailedToExecuteCommand] }).catch(() => {})
             });
