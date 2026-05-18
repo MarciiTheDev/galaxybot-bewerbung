@@ -1,5 +1,6 @@
 import type Button from "../../interfaces/Button";
 import {
+    ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
     type CategoryChannel,
@@ -9,7 +10,8 @@ import {
 } from "discord.js";
 import {DatabasePanel, DatabaseTicket} from "../../misc/Database.ts";
 import Embeds, {EmbedStyle} from "../../misc/Embeds.ts";
-import {findAsync} from "../../index.ts";
+import closeTicket from "./closeTicket.ts";
+import claimTicket from "./claimTicket.ts";
 
 export default <Button> {
     data: new ButtonBuilder()
@@ -24,47 +26,57 @@ export default <Button> {
         if(!panelId) {
             console.log("NO PID")
             return
-        };
+        }
 
         const panel = await DatabasePanel.findOne({ where: { id: panelId } });
         if(!panel) {
             console.log("NO PENTRY");
             return
-        };
+        }
 
         const guildId = panel.get("guild") as string;
         if(interaction.guildId !== guildId) return;
 
-        const openTicket = await DatabaseTicket.findOne({ where: {
+        const openTickets = await DatabaseTicket.findAll({ where: {
                 customer: interaction.user.id,
                 panel: panelId,
                 closed: false
             } });
 
-        if(openTicket) {
-            const channelId = openTicket.get("channel") as string;
-            const channel = await interaction.guild!.channels.fetch(channelId); // guild can't be null because of the check with the guildId and a non-null value above
+        const ticketLimit = panel.get("limit") as number;
+        if(openTickets.length >= ticketLimit) {
+            let userHitsLimit = true;
+            for(const ticket of openTickets) {
+                const channelId = ticket.get("channel") as string;
+                const channel = await interaction.guild!.channels.fetch(channelId); // guild can't be null because of the check with the guildId and a non-null value above
 
-            if(channel) {
-                await interaction.followUp({ embeds: [Embeds.TicketAlreadyOpen(channelId)] });
-                return;
+                if(channel) continue;
+
+                userHitsLimit = false;
+                await ticket.update("closed", true); // there can be a race-condition here in which there are multiple open tickets if the user clicks the button fast enough cba to fix it in the scope of this project tho
+                break;
             }
 
-            await openTicket.update("closed", true); // there can be a race-condition here in which there are multiple open tickets if the user clicks the button fast enough cba to fix it in the scope of this project tho
+            if(userHitsLimit) {
+                await interaction.followUp({ embeds: [
+                    Embeds.TicketAlreadyOpen(openTickets.map(ticket => (ticket.get("channel") as string)), ticketLimit)
+                ] });
+                return;
+            }
         }
 
-        let categoryId;
-        for(const id of JSON.parse(panel.get("categories") as string) as string[]) {
-            const category = await interaction.guild!.channels.fetch(id) as CategoryChannel;
-            if(!category) continue;
-            if(Object.keys(category.children).length >= 50) continue;
-            categoryId = id;
+        let category: CategoryChannel | null = null;
+        for(const id of panel.get("categories") as string[]) {
+            const possibleCategory = await interaction.guild!.channels.fetch(id) as CategoryChannel;
+            if(!possibleCategory) continue;
+            if(Object.keys(possibleCategory.children).length >= 50) continue;
+            category = possibleCategory;
             break;
         }
 
-        const supportRoles = JSON.parse(panel.get("supportRoles") as string) as string[];
+        const supportRoles = panel.get("supportRoles") as string[];
 
-        if(!categoryId) {
+        if(!category) {
 
             const permissions = [
                 { id: interaction.guildId!, deny: PermissionFlagsBits.ViewChannel },
@@ -80,11 +92,11 @@ export default <Button> {
             });
 
             try {
-                categoryId = (await interaction.guild!.channels.create({
+                category = (await interaction.guild!.channels.create({
                     type: ChannelType.GuildCategory,
                     name: `${panel.get("name")} - Overflow`,
                     permissionOverwrites: permissions
-                })).id;
+                }));
             } catch {
                 await interaction.followUp({ embeds: [Embeds.FailedToCreateChannel] });
                 return;
@@ -103,19 +115,24 @@ export default <Button> {
                 ticketChannel = await interaction.guild!.channels.create({
                     name: `ticket-${ticketNumber}`,
                     type: ChannelType.GuildText,
-                    parent: categoryId,
+                    parent: category.id,
                     permissionOverwrites: [
-                        { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }
+                        { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
+                        ...category.permissionOverwrites.cache.map(perm => {
+                            return {
+                                id: perm.id,
+                                allow: perm.allow,
+                                deny: perm.deny
+                            }
+                        })
                     ]
                 });
 
-                panel.set("nextNumber", ticketNumber+1);
-                await panel.save({ transaction: t });
+                await panel.update({ nextNumber: ticketNumber+1 }, { transaction: t });
 
                 return ticketNumber;
             });
-        } catch(err) {
-            console.log(err)
+        } catch {
             await interaction.followUp({ embeds: [Embeds.FailedToCreateChannel] });
             return;
         }
@@ -145,7 +162,8 @@ export default <Button> {
                     EmbedStyle.Normal,
                     "Members of the support team will soon be here to help you out with your inquiry. In the meantime, please specify what you need help with. The more precise you are, the better our staff can help you.",
                     "Thanks for reaching out"
-                )]
+                )],
+                components: [new ActionRowBuilder<ButtonBuilder>().addComponents(claimTicket.data, closeTicket.data)]
             });
         } catch {
             await interaction.followUp({ embeds: [Embeds.FailedToSendMessage(ticketChannel!.id)] });

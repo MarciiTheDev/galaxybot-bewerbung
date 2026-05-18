@@ -9,15 +9,41 @@ const database = new Sequelize(process.env.DATABASE_NAME!, process.env.DATABASE_
 export const DatabasePanel = database.define("panel", {
     id: {
         type: DataTypes.UUID,
-        primaryKey: true
+        primaryKey: true,
+        allowNull: false
     },
-    name: DataTypes.TEXT,
-    description: DataTypes.TEXT,
-    supportRoles: DataTypes.JSON,
-    panelChannel: DataTypes.TEXT,
-    panelMessage: DataTypes.TEXT,
-    categories: DataTypes.JSON,
-    guild: DataTypes.TEXT,
+    name: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    supportRoles: {
+        type: DataTypes.JSON,
+        allowNull: false
+    },
+    panelChannel: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    panelMessage: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    categories: {
+        type: DataTypes.JSON,
+        allowNull: false
+    },
+    guild: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    limit: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1
+    },
     nextNumber: {
         type: DataTypes.INTEGER,
         defaultValue: 1
@@ -27,23 +53,41 @@ export const DatabasePanel = database.define("panel", {
 export const DatabaseTicket = database.define("ticket", {
     id: {
         type: DataTypes.UUID,
-        primaryKey: true
+        primaryKey: true,
+        allowNull: false
     },
     number: {
         type: DataTypes.INTEGER,
-        unique: true
+        unique: true,
+        allowNull: false
     },
-    panel: DataTypes.UUID,
-    customer: DataTypes.TEXT,
-    channel: DataTypes.TEXT,
-    guild: DataTypes.TEXT, // fallback in case of the panel being deleted => tickets still linked to guilds
-    closed: DataTypes.BOOLEAN, // true = ticket channel deleted
+    panel: {
+        type: DataTypes.UUID,
+        allowNull: false
+    },
+    claimedBy: DataTypes.STRING,
+    customer: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    channel: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    guild: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    }, // fallback in case of the panel being deleted => tickets still linked to guilds
+    closed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    }, // true = ticket channel deleted
 });
 
 try {
     await database.authenticate();
     console.log('Connection to Database has been established successfully.');
-    //await database.sync({ force: true });
+    await database.sync();
     console.log('Database synced successfully.');
 } catch (error) {
     console.error('Unable to connect to the database:', error);

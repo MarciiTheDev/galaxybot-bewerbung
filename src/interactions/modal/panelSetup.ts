@@ -1,8 +1,8 @@
 import {
     ActionRowBuilder, type APIButtonComponentWithCustomId, ButtonBuilder,
     ChannelSelectMenuBuilder,
-    ChannelType,
-    LabelBuilder,
+    ChannelType, type GuildTextBasedChannel,
+    LabelBuilder, type Message,
     MessageFlags,
     ModalBuilder,
     PermissionFlagsBits,
@@ -97,15 +97,9 @@ export default <Modal> {
         }
 
         const panelId = crypto.randomUUID();
-        let panelMessageId;
-        try {
-            panelMessageId = (await channel.send({ embeds: [Embeds.DefaultEmbed(EmbedStyle.Normal, description, name)], components: [
-                new ActionRowBuilder<ButtonBuilder>()
-                    .addComponents(new ButtonBuilder(createTicket.data.data)
-                        .setCustomId(`${(createTicket.data.data as APIButtonComponentWithCustomId).custom_id}#${panelId}`)
-                    )
-            ] })).id;
-        } catch {
+        let panelMessageId = await SendPanelMessage(channel, name, description, panelId);
+
+        if(!panelMessageId) {
             await interaction.followUp({ embeds: [Embeds.FailedToSendMessage(channel.id)] });
             return;
         }
@@ -114,13 +108,35 @@ export default <Modal> {
             name,
             description,
             id: panelId,
-            supportRoles: JSON.stringify(roles?.mapValues(role => role?.id) || []),
+            supportRoles: roles?.mapValues(role => role?.id) || [],
             panelChannel: channel.id,
             panelMessage: panelMessageId,
-            categories: JSON.stringify([categoryId]),
+            categories: [categoryId],
             guild: interaction.guildId
         });
 
         await interaction.followUp({ embeds: [Embeds.SetupComplete(name, channel.id)] });
+    }
+}
+
+export async function SendPanelMessage(channel: GuildTextBasedChannel, name: string, description: string, panelId: string, message?: Message<true>) {
+    try {
+        const content = {
+            embeds: [Embeds.DefaultEmbed(EmbedStyle.Normal, description, name)], components: [
+                new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(new ButtonBuilder(createTicket.data.data)
+                        .setCustomId(`${(createTicket.data.data as APIButtonComponentWithCustomId).custom_id}#${panelId}`)
+                    )
+            ]
+        };
+
+        if(message) {
+            await message.edit(content);
+            return message.id;
+        }
+
+        return (await channel.send(content)).id;
+    } catch {
+        return null;
     }
 }
