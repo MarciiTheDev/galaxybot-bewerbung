@@ -6,7 +6,19 @@
   "devDependencies": {
     "@types/bun": "latest"
   },
+  "scripts": {
+    "start": "bun run src/index.ts"
+  },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "discord-api-types": "^0.38.47",
+    "discord.js": "^14.26.4",
+    "galactic.ts": "^2.1.5",
+    "install": "^0.13.0",
+    "pg": "^8.20.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8"
   }
 }
