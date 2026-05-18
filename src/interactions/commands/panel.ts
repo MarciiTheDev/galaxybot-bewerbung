@@ -5,8 +5,8 @@ import {
 } from "discord.js";
 import type Command from "../../interfaces/Command";
 import panelSetup, {SendPanelMessage} from "../modal/panelSetup";
-import {DatabasePanel} from "../../misc/Database.ts";
 import Embeds, {EmbedStyle} from "../../misc/Embeds.ts";
+import DatabasePanel from "../../interfaces/Database/DatabasePanel.ts";
 
 export default <Command> {
     data: new SlashCommandBuilder()
@@ -122,8 +122,8 @@ export default <Command> {
                     panels.length > 0 ?
                         panels.map(panel => {
                             return `**${panel.get("name")}** (\`${panel.get("id")}\`)\n` +
-                                `> Ticket count: ${(panel.get("nextNumber") as number)-1}\n` +
-                                `> Support roles: ${(panel.get("supportRoles") as string[]).map(id => {
+                                `> Ticket count: ${(panel.get("nextNumber"))-1}\n` +
+                                `> Support roles: ${(panel.get("supportRoles")).map(id => {
                                     return `<@&${id}>`
                                 })}`;
                         }).join("\n\n") : "There are `0` panels configured on this server."
@@ -144,7 +144,7 @@ export default <Command> {
             case "add-role":
             case "remove-role":
                 const role = interaction.options.getRole("role", true);
-                const supportRoles = panel.get("supportRoles") as string[];
+                const supportRoles = panel.get("supportRoles");
 
                 if(subCommand === "add-role") {
                     if(supportRoles.includes(role.id)) {
@@ -180,8 +180,8 @@ export default <Command> {
             case "delete":
             case "change-text":
             case "change-channel":
-                const channelId = panel.get("panelChannel") as string;
-                const messageId = panel.get("panelMessage") as string;
+                const channelId = panel.get("panelChannel");
+                const messageId = panel.get("panelMessage");
 
                 const panelMessage =
                     await ((await interaction.guild.channels.fetch(channelId)) as GuildTextBasedChannel | null)?.messages.fetch(messageId).catch(() => { });
@@ -193,8 +193,8 @@ export default <Command> {
                     return;
                 }
 
-                const name = panel.get("name") as string;
-                const description = panel.get("description") as string;
+                const name = panel.get("name");
+                const description = panel.get("description");
 
                 if(subCommand === "change-channel") {
                     const newChannel = interaction.options.getChannel("channel", true) as GuildTextBasedChannel;

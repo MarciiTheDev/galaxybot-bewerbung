@@ -2,8 +2,7 @@ import type Button from "../../interfaces/Button";
 import {ButtonBuilder, ButtonStyle, MessageFlags, type RepliableInteraction, TextChannel} from "discord.js";
 import {IsAllowedToManageTicket} from "./closeTicket.ts";
 import Embeds from "../../misc/Embeds.ts";
-import {DatabaseTicket} from "../../misc/Database.ts";
-import type {Model} from "sequelize";
+import {DatabaseTicket} from "../../interfaces/Database/DatabaseTicket.ts";
 
 export default <Button> {
     data: new ButtonBuilder()
@@ -30,10 +29,10 @@ export default <Button> {
     }
 }
 
-export async function HandleTicketClaimInteraction(interaction: RepliableInteraction, ticket: Model<any, any>) {
+export async function HandleTicketClaimInteraction(interaction: RepliableInteraction, ticket: DatabaseTicket) {
     if(!interaction.guild) return;
 
-    const claimedBy = ticket.get("claimedBy") as string | null;
+    const claimedBy = ticket.get("claimedBy");
     if(claimedBy) {
         await interaction.followUp({ embeds: [Embeds.TicketAlreadyClaimed] });
         return;

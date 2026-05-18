@@ -8,10 +8,11 @@ import {
     MessageFlags,
     PermissionFlagsBits
 } from "discord.js";
-import {DatabasePanel, DatabaseTicket} from "../../misc/Database.ts";
 import Embeds, {EmbedStyle} from "../../misc/Embeds.ts";
 import closeTicket from "./closeTicket.ts";
 import claimTicket from "./claimTicket.ts";
+import DatabasePanel from "../../interfaces/Database/DatabasePanel.ts";
+import {DatabaseTicket} from "../../interfaces/Database/DatabaseTicket.ts";
 
 export default <Button> {
     data: new ButtonBuilder()
@@ -34,7 +35,7 @@ export default <Button> {
             return;
         }
 
-        const guildId = panel.get("guild") as string;
+        const guildId = panel.get("guild");
         if(interaction.guildId !== guildId) return; // this shouldn't happen
 
         const openTickets = await DatabaseTicket.findAll({ where: {
@@ -43,11 +44,11 @@ export default <Button> {
                 closed: false
             } });
 
-        const ticketLimit = panel.get("limit") as number;
+        const ticketLimit = panel.get("limit");
         if(openTickets.length >= ticketLimit) {
             let userHitsLimit = true;
             for(const ticket of openTickets) {
-                const channelId = ticket.get("channel") as string;
+                const channelId = ticket.get("channel");
                 const channel = await interaction.guild!.channels.fetch(channelId); // guild can't be null because of the check with the guildId and a non-null value above
 
                 if(channel) continue;
@@ -66,7 +67,7 @@ export default <Button> {
         }
 
         let category: CategoryChannel | null = null;
-        for(const id of panel.get("categories") as string[]) {
+        for(const id of panel.get("categories")) {
             const possibleCategory = await interaction.guild!.channels.fetch(id) as CategoryChannel;
             if(!possibleCategory) continue;
             if(Object.keys(possibleCategory.children).length >= 50) continue;
@@ -74,7 +75,7 @@ export default <Button> {
             break;
         }
 
-        const supportRoles = panel.get("supportRoles") as string[];
+        const supportRoles = panel.get("supportRoles");
 
         if(!category) {
 
@@ -110,7 +111,7 @@ export default <Button> {
                 const panel = await DatabasePanel.findOne({ where: { id: panelId }, lock: t.LOCK.UPDATE, transaction: t });
                 if(!panel) throw "Panel not found";
 
-                const ticketNumber = panel.get("nextNumber") as number;
+                const ticketNumber = panel.get("nextNumber");
 
                 ticketChannel = await interaction.guild!.channels.create({
                     name: `ticket-${ticketNumber}`,

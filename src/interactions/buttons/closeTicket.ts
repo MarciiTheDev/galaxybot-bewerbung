@@ -6,9 +6,9 @@ import {
     type RepliableInteraction
 } from "discord.js";
 import type Button from "../../interfaces/Button";
-import {DatabasePanel, DatabaseTicket} from "../../misc/Database.ts";
 import Embeds from "../../misc/Embeds.ts";
-import {Model} from "sequelize";
+import {DatabaseTicket} from "../../interfaces/Database/DatabaseTicket.ts";
+import DatabasePanel from "../../interfaces/Database/DatabasePanel.ts";
 
 export default <Button> {
     data: new ButtonBuilder()
@@ -29,7 +29,7 @@ export default <Button> {
     },
 }
 
-export async function IsAllowedToManageTicket(interaction: Interaction, ticket: Model<any, any>) {
+export async function IsAllowedToManageTicket(interaction: Interaction, ticket: DatabaseTicket) {
     if(!interaction.guild) return false;
 
     const panel = await DatabasePanel.findOne({ where: { id: ticket.get("panel") } });
@@ -39,14 +39,14 @@ export async function IsAllowedToManageTicket(interaction: Interaction, ticket: 
 
     if(member.permissions.has(PermissionFlagsBits.Administrator)) {
         return true;
-    } else if(panel && member.roles.cache.hasAny(...panel.get("supportRoles") as string[])) {
+    } else if(panel && member.roles.cache.hasAny(...panel.get("supportRoles"))) {
         return true;
     }
 
     return false;
 }
 
-export async function HandleCloseTicketInteraction(interaction: RepliableInteraction, ticket: Model<any, any>) {
+export async function HandleCloseTicketInteraction(interaction: RepliableInteraction, ticket: DatabaseTicket) {
     if(!interaction.guild) return;
 
     let isAllowedToClose = ticket.get("customer") === interaction.user.id || await IsAllowedToManageTicket(interaction, ticket);

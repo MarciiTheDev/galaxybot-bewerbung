@@ -6,10 +6,10 @@ import {
     SlashCommandSubcommandBuilder,
     TextChannel
 } from "discord.js";
-import {DatabaseTicket} from "../../misc/Database.ts";
 import Embeds from "../../misc/Embeds.ts";
 import {HandleCloseTicketInteraction, IsAllowedToManageTicket} from "../buttons/closeTicket.ts";
 import {HandleTicketClaimInteraction} from "../buttons/claimTicket.ts";
+import {DatabaseTicket} from "../../interfaces/Database/DatabaseTicket.ts";
 
 export default <Command> {
     data: new SlashCommandBuilder()
@@ -53,7 +53,7 @@ export default <Command> {
                 await HandleTicketClaimInteraction(interaction, ticket);
                 break;
             case "unclaim":
-                const claimedBy = ticket.get("claimedBy") as string | null;
+                const claimedBy = ticket.get("claimedBy");
                 if(!claimedBy) {
                     await interaction.followUp({ embeds: [Embeds.TicketNotClaimed] });
                     return;

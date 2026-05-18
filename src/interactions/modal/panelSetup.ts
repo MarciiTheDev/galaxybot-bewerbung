@@ -12,8 +12,8 @@ import {
 } from "discord.js";
 import type Modal from "../../interfaces/Modal";
 import Embeds, { EmbedStyle } from "../../misc/Embeds";
-import { DatabasePanel } from "../../misc/Database";
 import createTicket from "../buttons/createTicket.ts";
+import DatabasePanel from "../../interfaces/Database/DatabasePanel.ts";
 
 export default <Modal> {
     data: new ModalBuilder()

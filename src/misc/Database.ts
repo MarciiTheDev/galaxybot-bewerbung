@@ -1,4 +1,6 @@
-import { DataTypes, Sequelize } from "sequelize";
+import {DataTypes, Sequelize} from "sequelize";
+import DatabasePanel from "../interfaces/Database/DatabasePanel.ts";
+import {DatabaseTicket} from "../interfaces/Database/DatabaseTicket.ts";
 
 const database = new Sequelize(process.env.DATABASE_NAME!, process.env.DATABASE_USER!, process.env.DATABASE_PASSWORD!, {
     host: process.env.DATABASE_HOST!,
@@ -6,7 +8,8 @@ const database = new Sequelize(process.env.DATABASE_NAME!, process.env.DATABASE_
     dialect: "postgres"
 });
 
-export const DatabasePanel = database.define("panel", {
+
+DatabasePanel.init({
     id: {
         type: DataTypes.UUID,
         primaryKey: true,
@@ -48,9 +51,9 @@ export const DatabasePanel = database.define("panel", {
         type: DataTypes.INTEGER,
         defaultValue: 1
     }
-});
+}, { sequelize: database });
 
-export const DatabaseTicket = database.define("ticket", {
+DatabaseTicket.init({
     id: {
         type: DataTypes.UUID,
         primaryKey: true,
@@ -82,7 +85,7 @@ export const DatabaseTicket = database.define("ticket", {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     }, // true = ticket channel deleted
-});
+}, { sequelize: database });
 
 try {
     await database.authenticate();
