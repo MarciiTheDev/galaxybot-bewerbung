@@ -24,18 +24,18 @@ export default <Button> {
 
         const panelId = args[0];
         if(!panelId) {
-            console.log("NO PID")
-            return
+            await interaction.followUp({ embeds: [Embeds.PanelDoesntExist] });
+            return;
         }
 
         const panel = await DatabasePanel.findOne({ where: { id: panelId } });
         if(!panel) {
-            console.log("NO PENTRY");
-            return
+            await interaction.followUp({ embeds: [Embeds.PanelDoesntExist] });
+            return;
         }
 
         const guildId = panel.get("guild") as string;
-        if(interaction.guildId !== guildId) return;
+        if(interaction.guildId !== guildId) return; // this shouldn't happen
 
         const openTickets = await DatabaseTicket.findAll({ where: {
                 customer: interaction.user.id,

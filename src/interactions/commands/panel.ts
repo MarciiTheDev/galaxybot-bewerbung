@@ -93,6 +93,15 @@ export default <Command> {
             .setName("list")
             .setDescription("Lists all panels configured for this guild")
         )
+        .addSubcommand(new SlashCommandSubcommandBuilder()
+            .setName("delete")
+            .setDescription("Deletes a panel (tickets which are still open can only be managed by administrators or closed by the user itself)")
+            .addStringOption(opt => opt
+                .setName("panel-id")
+                .setDescription("The Id of the panel")
+                .setRequired(true)
+            )
+        )
         .setDescription("Manage panels")
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     run: async (client, interaction) => {
@@ -168,6 +177,7 @@ export default <Command> {
                 await panel.update({ limit });
                 await interaction.followUp({ embeds: [Embeds.LimitUpdated(limit)] });
                 break;
+            case "delete":
             case "change-text":
             case "change-channel":
                 const channelId = panel.get("panelChannel") as string;
@@ -175,6 +185,13 @@ export default <Command> {
 
                 const panelMessage =
                     await ((await interaction.guild.channels.fetch(channelId)) as GuildTextBasedChannel | null)?.messages.fetch(messageId).catch(() => { });
+
+                if(subCommand === "delete") {
+                    panelMessage?.delete().catch(() => {});
+                    await panel.destroy();
+                    await interaction.followUp({ embeds: [Embeds.PanelDeleted] });
+                    return;
+                }
 
                 const name = panel.get("name") as string;
                 const description = panel.get("description") as string;

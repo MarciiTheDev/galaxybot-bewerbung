@@ -67,6 +67,8 @@ export default {
     TicketUnclaimed: DefaultEmbed(EmbedStyle.Normal, `Ticket unclaimed successfully.`, "Ticket unclaimed"),
     TicketUnclaimedMessage: DefaultEmbed(EmbedStyle.Error, `The ticket has been unclaimed. A different support agent will be with you soon.`, "Ticket unclaimed"),
     TicketNotClaimed: DefaultEmbed(EmbedStyle.Error, "The ticket you are trying to unclaim is not claimed", "Ticket unclaimed"),
+    PanelDoesntExist: DefaultEmbed(EmbedStyle.Error, "The panel you are trying to create a ticket in, doesn't exist", "Panel not found"),
+    PanelDeleted: DefaultEmbed(EmbedStyle.Info, "The panel has been deleted successfully", "Panel deleted"),
     TicketClaimedMessage: (agentId: string) =>
         DefaultEmbed(EmbedStyle.Info, `Ticket has been claimed by <@${agentId}>. They will respond to your case shortly.`, "Ticket claimed"),
     PanelNotFound: (panelId: string) =>

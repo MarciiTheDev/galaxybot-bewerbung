@@ -1,5 +1,4 @@
 import { DataTypes, Sequelize } from "sequelize";
-import {isDevEnv} from "../index.ts";
 
 const database = new Sequelize(process.env.DATABASE_NAME!, process.env.DATABASE_USER!, process.env.DATABASE_PASSWORD!, {
     host: process.env.DATABASE_HOST!,
@@ -88,7 +87,7 @@ export const DatabaseTicket = database.define("ticket", {
 try {
     await database.authenticate();
     console.log('Connection to Database has been established successfully.');
-    await database.sync({ force: isDevEnv() });
+    await database.sync();
     console.log('Database synced successfully.');
 } catch (error) {
     console.error('Unable to connect to the database:', error);
