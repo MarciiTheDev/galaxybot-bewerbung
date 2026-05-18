@@ -26,14 +26,6 @@ export default <Command> {
         .addSubcommand(new SlashCommandSubcommandBuilder()
             .setName("unclaim")
             .setDescription("Unclaims the ticket.")
-        )
-        .addSubcommand(new SlashCommandSubcommandBuilder()
-            .setName("add")
-            .setDescription("Adds a user to the ticket.")
-        )
-        .addSubcommand(new SlashCommandSubcommandBuilder()
-            .setName("remove")
-            .setDescription("Removes a user from the ticket.")
         ),
     async run(client, interaction) {
         if(!interaction.guild) return;
