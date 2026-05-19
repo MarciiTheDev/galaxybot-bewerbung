@@ -4,6 +4,7 @@ import onReady from "./listeners/onReady";
 import type BotGlobals from "./interfaces/BotGlobals";
 import onGuildCreate from "./listeners/onGuildCreate";
 import onInteractionCreate from "./listeners/onInteractionCreate";
+import "./misc/Database";
 
 export class ExtendedClient extends Client<true> {
     cluster: Cluster<ExtendedClient>;

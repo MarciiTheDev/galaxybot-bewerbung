@@ -51,7 +51,7 @@ DatabasePanel.init({
         type: DataTypes.INTEGER,
         defaultValue: 1
     }
-}, { sequelize: database });
+}, { sequelize: database, modelName: "panel" });
 
 DatabaseTicket.init({
     id: {
@@ -85,7 +85,7 @@ DatabaseTicket.init({
         type: DataTypes.BOOLEAN,
         defaultValue: false
     }, // true = ticket channel deleted
-}, { sequelize: database });
+}, { sequelize: database, modelName: "ticket" });
 
 try {
     await database.authenticate();
