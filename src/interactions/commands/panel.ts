@@ -95,7 +95,7 @@ export default <Command> {
         )
         .addSubcommand(new SlashCommandSubcommandBuilder()
             .setName("delete")
-            .setDescription("Deletes a panel (tickets which are still open can only be managed by administrators or closed by the user itself)")
+            .setDescription("Deletes a panel (tickets which are still open can only be managed by adminstrators")
             .addStringOption(opt => opt
                 .setName("panel-id")
                 .setDescription("The Id of the panel")
