@@ -2,7 +2,7 @@ import {DataTypes, Sequelize} from "sequelize";
 import DatabasePanel from "../interfaces/Database/DatabasePanel.ts";
 import {DatabaseTicket} from "../interfaces/Database/DatabaseTicket.ts";
 
-const database = new Sequelize(process.env.DATABASE_NAME!, process.env.DATABASE_USER!, process.env.DATABASE_PASSWORD!, {
+export const database = new Sequelize(process.env.DATABASE_NAME!, process.env.DATABASE_USER!, process.env.DATABASE_PASSWORD!, {
     host: process.env.DATABASE_HOST!,
     port: Number.parseInt(process.env.DATABASE_PORT || "5432"),
     dialect: "postgres"
@@ -90,8 +90,6 @@ DatabaseTicket.init({
 try {
     await database.authenticate();
     console.log('Connection to Database has been established successfully.');
-    await database.sync();
-    console.log('Database synced successfully.');
 } catch (error) {
     console.error('Unable to connect to the database:', error);
     throw error;

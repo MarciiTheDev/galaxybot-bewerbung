@@ -20,7 +20,14 @@ In order for the code to work we need some env variables so go to the root of th
 
 **NOTE:** This project uses postgres as database server.
 
-To run:
+Then sync the database via:
+
+```bash
+bun run sync
+```
+
+
+Finally run the bot:
 
 ```bash
 bun run index.ts
